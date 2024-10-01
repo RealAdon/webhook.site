@@ -1,8 +1,7 @@
 ##############################################
 # Stage 1: Install node dependencies and run gulp
 ##############################################
-
-FROM node:11 as npm
+FROM --platform=linux/arm64 node:11 as npm
 WORKDIR /app
 
 COPY package.json /app
@@ -14,11 +13,13 @@ COPY gulpfile.js /app
 RUN npm run gulp
 
 ##############################################
-# Stage 2: Composer, nginx and fpm
+# Stage 2: Composer, PHP-FPM, and NGINX (ARM64)
 ##############################################
-
-FROM bkuhl/fpm-nginx:7.3
+FROM arm64v8/php:7.3-fpm
 WORKDIR /var/www/html
+
+# Install NGINX on ARM64
+RUN apt-get update && apt-get install -y nginx
 
 # Contains laravel echo server proxy configuration
 COPY /nginx.conf /etc/nginx/conf.d
@@ -28,8 +29,7 @@ USER www-data
 ADD --chown=www-data:www-data /composer.json /var/www/html
 ADD --chown=www-data:www-data /composer.lock /var/www/html
 
-RUN composer global require hirak/prestissimo \
-    && composer install --no-interaction --no-autoloader --no-dev --prefer-dist --no-scripts \
+RUN composer install --no-interaction --no-autoloader --no-dev --prefer-dist --no-scripts \
     && rm -rf /home/www-data/.composer/cache
 
 ADD --chown=www-data:www-data /storage /var/www/html/storage
