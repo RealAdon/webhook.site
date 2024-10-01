@@ -19,7 +19,10 @@ FROM arm64v8/php:7.3-fpm
 WORKDIR /var/www/html
 
 # Install NGINX on ARM64
-RUN apt-get update && apt-get install -y nginx
+RUN apt-get update && apt-get install -y nginx curl git unzip
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Contains laravel echo server proxy configuration
 COPY /nginx.conf /etc/nginx/conf.d
@@ -29,6 +32,7 @@ USER www-data
 ADD --chown=www-data:www-data /composer.json /var/www/html
 ADD --chown=www-data:www-data /composer.lock /var/www/html
 
+# Run Composer install
 RUN composer install --no-interaction --no-autoloader --no-dev --prefer-dist --no-scripts \
     && rm -rf /home/www-data/.composer/cache
 
