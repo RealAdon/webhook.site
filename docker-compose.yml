@@ -1,6 +1,7 @@
 services:
   webhook:
     image: "webhooksite/webhook.site"
+    platform: linux/arm64
     # Enable build for development:
     # build:
     #   dockerfile: Dockerfile
